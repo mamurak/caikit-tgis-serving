@@ -16,13 +16,15 @@ openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:2048 \
 -keyout $BASE_DIR/root.key \
 -out $BASE_DIR/root.crt
 
-openssl req -x509 -newkey rsa:2048 \
--sha256 -days 3560 -nodes \
+openssl req -new -keyout $BASE_DIR/wildcard.key -out $BASE_DIR/wildcard.csr \
+-sha256 -nodes \
 -subj "/CN=${DOMAIN_NAME}/O=Example Inc." \
--extensions san -config ${BASE_DIR}/openssl-san.config \
--CA $BASE_DIR/root.crt \
--CAkey $BASE_DIR/root.key \
--keyout $BASE_DIR/wildcard.key  \
--out $BASE_DIR/wildcard.crt 
+-config ${BASE_DIR}/openssl-san.config
+
+openssl x509 -req -in $BASE_DIR/wildcard.csr -CA $BASE_DIR/root.crt \
+-CAkey $BASE_DIR/root.key -CAcreateserial \
+-out $BASE_DIR/wildcard.crt \
+-days 3560 -sha256 \
+-extfile ${BASE_DIR}/openssl-san.config -extensions san
 
 openssl x509 -in ${BASE_DIR}/wildcard.crt -text
